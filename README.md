@@ -1,4 +1,3 @@
 # DragonKing
-Mac OS Modular Rootkit
+Modular Rootkit
 
-Works on 10.12.2
