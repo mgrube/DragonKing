@@ -16,6 +16,8 @@ This rootkit hides by hooking the system call table and using an agent to do int
     - FTE Traffic Encryption
     - Update/Maintenance Functionality
     - P2P Command&Control Scheme
+    - OS X Support
+    - Windows Support
     - EFI Infection
     - SMM Infection
 
