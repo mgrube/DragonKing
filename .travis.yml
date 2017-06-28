@@ -1,2 +1,4 @@
+before_install:
+    - sudo apt-get install build-essential linux-headers-$(uname -r)
 language: c
 script: make
