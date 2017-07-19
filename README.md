@@ -1,5 +1,7 @@
 <p align="center"><img src="DK2.jpeg"></p>
 
+[![Build Status](https://travis-ci.org/mgrube/DragonKing.svg?branch=master)](https://travis-ci.org/mgrube/DragonKing)
+
 # DragonKing Rootkit
 
 This is an open source rootkit created for a class taught on Rootkit Design. 
