@@ -48,7 +48,7 @@ static ssize_t dev_write(struct file *filp, const char *buff, size_t len, loff_t
 	}
 
 	//TODO: Implement a set of commands here
-	if(strstr(command, "test") != 0){
+	if(strstr(command, "test") != 0 && agentpid == task_pid_nr(current)){
 		printk("Test detected.\n");
 	}
 	return count;
