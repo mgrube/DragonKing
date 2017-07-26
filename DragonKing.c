@@ -39,10 +39,17 @@ static ssize_t dev_write(struct file *filp, const char *buff, size_t len, loff_t
 	short count = 0;
 	memset(command,0, 250);
 	readPos = 0;
+	//Should be using kzalloc. Come back to this.
 	while(len>0)
 	{
-		command[count++] = buff[ind--];
+		command[count] = buff[count];
+		count++;
 		len--;
+	}
+
+	//TODO: Implement a set of commands here
+	if(strstr(command, "test") != 0){
+		printk("Test detected.\n");
 	}
 	return count;
 
