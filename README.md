@@ -29,3 +29,5 @@ http://www.thegeekstuff.com/2013/07/write-linux-kernel-module/
 
 https://stackoverflow.com/questions/2103315/linux-kernel-system-call-hooking-example#2103745
 
+https://appusajeev.wordpress.com/2011/06/18/writing-a-linux-character-device-driver/
+
