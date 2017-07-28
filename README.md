@@ -8,6 +8,8 @@ This is an open source rootkit created for a class taught on Rootkit Design.
 
 This rootkit hides by hooking the system call table and using an agent to do interactive manipulation in userland. 
 
+Disclaimer: This rootkit was tested and developed on 64 bit Ubuntu 17.04. There are currently issues with 16.04.
+
 ## Features
     - An agent that works in userland 
     - Self-destruct functionality
